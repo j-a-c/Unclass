@@ -1,3 +1,5 @@
+Foo.java
+*.txt
 *.class
 
 # Package Files #
