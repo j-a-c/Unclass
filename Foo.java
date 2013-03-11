@@ -32,10 +32,16 @@ public class Foo{
 
         int a = 0;
 
-        if(a == 1)
-            System.out.println("a = 1");
+        if(a == 1){
+            if(a + 1 < 2)
+                a++;
+            else
+                System.out.println("a = 1");
+        }
         else if(a == 2)
             System.out.println("a = 2");
+        else if(a==4)
+            System.out.println("impossible");
         else
             System.out.println("a != 1 && a != 2");
     }//end ifTest

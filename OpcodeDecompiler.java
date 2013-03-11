@@ -55,6 +55,7 @@ public class OpcodeDecompiler{
         controlHead = new PriorityQueue<Integer>();
         locals = new LinkedList<String>();
 
+        //decompiled code
         decompiledCode = "";
         constantPool = project.getConstantPool();
 
@@ -95,9 +96,11 @@ public class OpcodeDecompiler{
         //some temporary vars
         int index; int inc; String ref; String val; String args;
         String val1; String val2;
+        //should this control block's tabSize match the previous block's tabsize?
+        boolean continueBlock = false;
         //main loop
         while(i < code.length){
-
+            
             //test for control structure's end
             if(controlHead.peek() != null && i == controlHead.peek()){
                 controlHead.poll();
@@ -110,8 +113,11 @@ public class OpcodeDecompiler{
                 //code[i - 3] should be goto (167 = 0xA7) branches
                 index = (short) (code[i-2] << 8) + code[i-1];
                 if(code[i-3] == 167 && index > 3){
+                    continueBlock = true;
+                    //set up for last 'else' statement
+                    //the if switches are responsible for changing to 'else if'
                     decompiledCode += this.tabs() + "else{\n";
-                    tabSize++;
+                    //the next control structure
                     controlHead.offer(i + index - 3);
                 }
                 else decompiledCode += "\n";
@@ -543,9 +549,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " != 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " != 0 " + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -563,9 +573,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " == 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " == 0 " + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -583,10 +597,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " >= 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " >= 0 " + "){\n";
-                    
+                    }
                     tabSize++;
 
                     i++; break;
@@ -603,10 +620,14 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " < 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " < 0 " + "){\n";
-                    
+
+                    }
                     tabSize++;
 
                     i++; break;
@@ -623,9 +644,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " <= 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " <= 0 " + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -643,9 +668,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " > 0 " + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " > 0 " + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -666,9 +695,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " != " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " != " + val2 + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -688,9 +721,14 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " == " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        //handle a continuing control block
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " == " + val2 + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -710,9 +748,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " >= " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " >= " + val2 + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -732,9 +774,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " < " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " < " + val2 + "){\n";
+                    }
                     
                     tabSize++;
                     
@@ -754,9 +800,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " <= " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " <= " + val2 + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -776,9 +826,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             val1 + " > " + val2 + " ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             val1 + " > " + val2 + "){\n";
+                    }
                     
                     tabSize++;
 
@@ -913,9 +967,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " != null ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " != null ){\n";
+                    }
                     
                     tabSize++;
                     
@@ -935,9 +993,13 @@ public class OpcodeDecompiler{
                     if(index < 0)
                         decompiledCode += this.tabs() + "for(; " +
                             stack.pop() + " == null ;){\n";
-                    else
-                        decompiledCode += this.tabs() + "if(" + 
+                    else{
+                        if(!continueBlock) decompiledCode += this.tabs();
+                        else decompiledCode = decompiledCode.substring(0, decompiledCode.length()-2) + " ";
+                        continueBlock = false;
+                        decompiledCode += "if(" + 
                             stack.pop() + " == null ){\n";
+                    }
                     
                     tabSize++;
                     
